@@ -5,6 +5,7 @@ use common_utils::date_time;
 use error_stack::{report, IntoReport, ResultExt};
 #[cfg(feature = "kms")]
 use external_services::kms::{self, decrypt::KmsDecrypt};
+use http::header;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use masking::{PeekInterface, StrongSecret};
 
@@ -302,7 +303,7 @@ where
         state: &A,
     ) -> RouterResult<()> {
         let mut token = get_jwt(request_headers)?;
-        token = strip_jwt_token(token)?;
+        // token = strip_jwt_token(token)?;
         decode_jwt::<JwtAuthPayloadFetchUnit>(token, state)
             .await
             .map(|_| ())
@@ -325,7 +326,7 @@ where
         state: &A,
     ) -> RouterResult<AuthenticationData> {
         let mut token = get_jwt(request_headers)?;
-        token = strip_jwt_token(token)?;
+        // token = strip_jwt_token(token)?;
         let payload = decode_jwt::<JwtAuthPayloadFetchMerchantAccount>(token, state).await?;
         let key_store = state
             .store()
@@ -508,18 +509,25 @@ pub fn get_api_key(headers: &HeaderMap) -> RouterResult<&str> {
 }
 
 pub fn get_jwt(headers: &HeaderMap) -> RouterResult<&str> {
-    headers
-        .get(crate::headers::AUTHORIZATION)
-        .get_required_value(crate::headers::AUTHORIZATION)?
+    let data = headers
+        .get(header::COOKIE)
+        .get_required_value("cookie")?
         .to_str()
         .into_report()
         .change_context(errors::ApiErrorResponse::InternalServerError)
-        .attach_printable("Failed to convert JWT token to string")
+        .attach_printable("Failed to convert JWT token to string")?
+        .split("; ")
+        .into_iter()
+        .find_map(|data| {
+            data.strip_prefix("token=")
+        });
+    println!("data is {:#?}", data);
+    data.ok_or(errors::ApiErrorResponse::InvalidJwtToken.into())
 }
 
 pub fn strip_jwt_token(token: &str) -> RouterResult<&str> {
     token
-        .strip_prefix("Bearer ")
+        .strip_prefix("token=")
         .ok_or_else(|| errors::ApiErrorResponse::InvalidJwtToken.into())
 }
 
