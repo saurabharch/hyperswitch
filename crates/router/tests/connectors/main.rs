@@ -35,13 +35,16 @@ mod nexinets;
 mod nmi;
 mod noon;
 mod nuvei;
+#[cfg(feature = "dummy_connector")]
 mod opayo;
 mod opennode;
+#[cfg(feature = "dummy_connector")]
 mod payeezy;
 mod payme;
 mod paypal;
 mod payu;
 mod powertranz;
+#[cfg(feature = "dummy_connector")]
 mod prophetpay;
 mod rapyd;
 mod shift4;
@@ -51,6 +54,7 @@ mod stripe;
 mod trustpay;
 mod tsys;
 mod utils;
+#[cfg(feature = "dummy_connector")]
 mod volt;
 mod wise;
 mod worldline;

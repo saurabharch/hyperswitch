@@ -114,7 +114,6 @@ pub enum Connector {
     Stax,
     Stripe,
     Trustpay,
-    // Tsys,
     Tsys,
     //Volt, added as template code for future usage,
     Wise,

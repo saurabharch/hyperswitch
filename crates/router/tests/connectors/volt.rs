@@ -12,6 +12,7 @@ impl utils::Connector for VoltTest {
         use router::connector::Volt;
         types::api::ConnectorData {
             connector: Box::new(&Volt),
+            // Remove `dummy_connector` feature gate from module in `main.rs` when updating this to use actual connector variant
             connector_name: types::Connector::DummyConnector1,
             get_token: types::api::GetToken::Connector,
         }

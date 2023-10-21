@@ -4,9 +4,11 @@ use async_trait::async_trait;
 use common_utils::pii::Email;
 use error_stack::Report;
 use masking::Secret;
+#[cfg(feature = "payouts")]
+use router::core::utils as core_utils;
 use router::{
     configs::settings::Settings,
-    core::{errors, errors::ConnectorError, payments, utils as core_utils},
+    core::{errors, errors::ConnectorError, payments},
     db::StorageImpl,
     routes, services,
     types::{self, api, storage::enums, AccessToken, PaymentAddress, RouterData},
@@ -26,6 +28,8 @@ pub trait Connector {
     fn get_request_interval(&self) -> u64 {
         5
     }
+
+    #[cfg(feature = "payouts")]
     fn get_payout_data(&self) -> Option<types::api::PayoutConnectorData> {
         None
     }
@@ -423,6 +427,7 @@ pub trait ConnectorActions: Connector {
         Err(errors::ConnectorError::ProcessingStepFailed(None).into())
     }
 
+    #[cfg(feature = "payouts")]
     fn get_payout_request<Flow, Res>(
         &self,
         connector_payout_id: Option<String>,
@@ -534,6 +539,7 @@ pub trait ConnectorActions: Connector {
         }
     }
 
+    #[cfg(feature = "payouts")]
     async fn verify_payout_eligibility(
         &self,
         payout_type: enums::PayoutType,
@@ -572,6 +578,7 @@ pub trait ConnectorActions: Connector {
         Ok(res.response.unwrap())
     }
 
+    #[cfg(feature = "payouts")]
     async fn fulfill_payout(
         &self,
         connector_payout_id: Option<String>,
@@ -611,6 +618,7 @@ pub trait ConnectorActions: Connector {
         Ok(res.response.unwrap())
     }
 
+    #[cfg(feature = "payouts")]
     async fn create_payout(
         &self,
         connector_customer: Option<String>,
@@ -651,6 +659,7 @@ pub trait ConnectorActions: Connector {
         Ok(res.response.unwrap())
     }
 
+    #[cfg(feature = "payouts")]
     async fn cancel_payout(
         &self,
         connector_payout_id: String,
@@ -691,6 +700,7 @@ pub trait ConnectorActions: Connector {
         Ok(res.response.unwrap())
     }
 
+    #[cfg(feature = "payouts")]
     async fn create_and_fulfill_payout(
         &self,
         connector_customer: Option<String>,
@@ -714,6 +724,7 @@ pub trait ConnectorActions: Connector {
         Ok(fulfill_res)
     }
 
+    #[cfg(feature = "payouts")]
     async fn create_and_cancel_payout(
         &self,
         connector_customer: Option<String>,
@@ -737,6 +748,7 @@ pub trait ConnectorActions: Connector {
         Ok(cancel_res)
     }
 
+    #[cfg(feature = "payouts")]
     async fn create_payout_recipient(
         &self,
         payout_type: enums::PayoutType,
